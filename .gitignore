@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+dist/windows/pvi.exe
+dist/linux/pvi
+dist/macos/pvi
+*.egg-info/

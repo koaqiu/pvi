@@ -1,0 +1,140 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Validate tag version matches pyproject
+        run: |
+          python - <<'PY'
+          import pathlib
+          import re
+
+          pyproject_text = pathlib.Path('pyproject.toml').read_text(encoding='utf-8')
+          match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject_text, flags=re.MULTILINE)
+          if not match:
+              raise SystemExit('pyproject.toml 未找到 [project].version')
+
+          pyproject_version = match.group(1)
+          tag = '${{ github.ref_name }}'
+          tag_version = tag[1:] if tag.startswith('v') else tag
+
+          if pyproject_version != tag_version:
+              raise SystemExit(
+                  f'版本不一致: tag={tag_version}, pyproject={pyproject_version}'
+              )
+
+          print(f'版本校验通过: {tag_version}')
+          PY
+
+  build-onefile:
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows
+            artifact_name: pvi-windows-${{ github.ref_name }}
+            artifact_path: dist/windows/pvi.exe
+          - os: ubuntu-latest
+            target: linux
+            artifact_name: pvi-linux-${{ github.ref_name }}
+            artifact_path: dist/linux/pvi
+          - os: macos-latest
+            target: macos
+            artifact_name: pvi-macos-${{ github.ref_name }}
+            artifact_path: dist/macos/pvi
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install bundle dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[bundle]
+
+      - name: Build onefile
+        run: python build_onefile.py --target-platform ${{ matrix.target }}
+
+      - name: Smoke test version (Windows)
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: .\dist\windows\pvi.exe --version
+
+      - name: Smoke test version (POSIX)
+        if: matrix.target != 'windows'
+        run: |
+          chmod +x "${{ matrix.artifact_path }}"
+          "${{ matrix.artifact_path }}" --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+
+  create-release:
+    needs: build-onefile
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pvi-windows-${{ github.ref_name }}
+          path: release-assets/windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pvi-linux-${{ github.ref_name }}
+          path: release-assets/linux
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pvi-macos-${{ github.ref_name }}
+          path: release-assets/macos
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/windows/pvi.exe
+            release-assets/linux/pvi
+            release-assets/macos/pvi
