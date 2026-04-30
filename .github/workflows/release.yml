@@ -112,6 +112,31 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract changelog for this version
+        run: |
+          python - <<'PY'
+          import re, pathlib, sys
+
+          tag = "${{ github.ref_name }}"
+          version = tag.lstrip("v")
+
+          text = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+
+          # 匹配当前版本的 section（直到下一个 ## 标题或文件末尾）
+          pattern = rf"(?m)^## \[{re.escape(version)}\].*?$\n(.*?)(?=^## \[|\Z)"
+          match = re.search(pattern, text, re.DOTALL | re.MULTILINE)
+          if not match:
+              print(f"CHANGELOG 中未找到版本 {version}，将使用空 body", file=sys.stderr)
+              pathlib.Path("release_notes.md").write_text("", encoding="utf-8")
+          else:
+              body = match.group(1).strip()
+              pathlib.Path("release_notes.md").write_text(body, encoding="utf-8")
+              print(f"已提取版本 {version} 的发布说明（{len(body)} 字符）")
+          PY
+
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
@@ -139,7 +164,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             release-assets/pvi-windows.exe
             release-assets/pvi-linux
