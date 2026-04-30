@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Textual-based TUI editor with file tree and syntax highlighting."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 authors = [
   { name = "koaqiu" }
 ]

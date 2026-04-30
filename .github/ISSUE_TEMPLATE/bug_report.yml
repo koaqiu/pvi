@@ -1,0 +1,42 @@
+name: Bug Report
+description: Report a reproducible problem in pvi.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened? What did you expect?
+      placeholder: A clear and concise summary.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal reproducible sequence.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Press ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, install method, and commit/tag.
+      placeholder: Windows 11, Python 3.11.9, pip install pvi-editor, commit ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste traceback, terminal output, or screenshots if available.
+      render: shell

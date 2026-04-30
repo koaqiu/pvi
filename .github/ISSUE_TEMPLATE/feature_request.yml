@@ -1,0 +1,31 @@
+name: Feature Request
+description: Suggest a new feature or improvement for pvi.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+      placeholder: A clear and concise problem statement.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What behavior or UX do you expect?
+      placeholder: Describe your proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternatives or workarounds you've considered.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, examples, or references.

@@ -1,5 +1,10 @@
 # pvi
 
+[![CI](https://github.com/koaqiu/pvi/actions/workflows/onefile-build.yml/badge.svg)](https://github.com/koaqiu/pvi/actions/workflows/onefile-build.yml)
+[![Release](https://github.com/koaqiu/pvi/actions/workflows/release.yml/badge.svg)](https://github.com/koaqiu/pvi/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+
 基于 Textual 的终端编辑器（TUI），通过 `pvi` 命令启动，支持文件树浏览、文本编辑、语法高亮和 Markdown 预览。
 
 发布说明：PyPI 发布名为 `pvi-editor`，安装后命令仍为 `pvi`。
