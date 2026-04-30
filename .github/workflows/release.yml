@@ -130,11 +130,17 @@ jobs:
           name: pvi-macos-${{ github.ref_name }}
           path: release-assets/macos
 
+      - name: Normalize release asset names
+        run: |
+          cp release-assets/windows/pvi.exe release-assets/pvi-windows.exe
+          cp release-assets/linux/pvi release-assets/pvi-linux
+          cp release-assets/macos/pvi release-assets/pvi-macos
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            release-assets/windows/pvi.exe
-            release-assets/linux/pvi
-            release-assets/macos/pvi
+            release-assets/pvi-windows.exe
+            release-assets/pvi-linux
+            release-assets/pvi-macos
